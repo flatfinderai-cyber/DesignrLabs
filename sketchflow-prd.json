@@ -1,0 +1,642 @@
+{
+  "product": {
+    "name": "SketchFlow",
+    "tagline": "Transform hand-drawn sketches into production-ready code",
+    "version": "1.0.0",
+    "repository": "https://github.com/flatfinderai-cyber/DesignrLabs.git",
+    "brand": "Designr Labs™",
+    "target_launch": "Q2 2026"
+  },
+  "product_overview": {
+    "description": "SketchFlow is an AI-powered design-to-code platform that converts hand-drawn UI sketches into interactive, production-ready web applications. Upload sketches from whiteboards, iPad, or paper—SketchFlow detects UI elements, renders live previews, and exports clean code in React, Vue, Angular, or HTML/CSS.",
+    "target_users": [
+      "Solo founders and entrepreneurs",
+      "Product designers",
+      "No-code/low-code builders",
+      "UX/UI designers",
+      "Startups validating MVPs",
+      "Developers prototyping interfaces"
+    ],
+    "value_proposition": "Ship products faster by skipping design tools—go from napkin sketch to deployed app in minutes, not weeks."
+  },
+  "technical_stack": {
+    "frontend": {
+      "framework": "Next.js 14+",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS",
+      "state_management": "Zustand",
+      "ui_components": "Radix UI + Shadcn/ui"
+    },
+    "backend": {
+      "runtime": "Node.js",
+      "framework": "Next.js API Routes",
+      "database": "Supabase (PostgreSQL)",
+      "file_storage": "Supabase Storage",
+      "authentication": "Supabase Auth (OAuth: Google, GitHub)"
+    },
+    "ai_services": {
+      "vision_model": "GPT-4 Vision API",
+      "code_generation": "Claude 3.5 Sonnet (Anthropic)",
+      "ocr": "Google Cloud Vision API",
+      "web_scraping": "Firecrawl API"
+    },
+    "deployment": {
+      "platform": "Vercel",
+      "ci_cd": "GitHub Actions",
+      "monitoring": "Vercel Analytics + Sentry"
+    },
+    "ralph_loop_integration": {
+      "enabled": true,
+      "config_file": ".claude/ralph-loop.local.md",
+      "specs_directory": "@specs/",
+      "stdlib_directory": "@stdlib/",
+      "max_iterations": 25,
+      "parallel_subagents": 500,
+      "context_window_limit": "170k tokens"
+    }
+  },
+  "features": {
+    "mvp_core_features": [
+      {
+        "id": "F001",
+        "name": "Sketch Upload & Processing",
+        "priority": "P0",
+        "description": "Upload sketches via drag-drop, camera capture, or iPad sync",
+        "requirements": [
+          "Support JPEG, PNG, HEIC, PDF formats",
+          "Max file size: 25MB per sketch",
+          "Resolution support: 640x480 to 8K (7680x4320)",
+          "Batch upload for multi-page flows",
+          "Auto-crop and perspective correction for whiteboard photos",
+          "Contrast enhancement for better AI detection",
+          "iCloud/AirDrop integration for Apple devices"
+        ],
+        "technical_implementation": {
+          "api_endpoint": "POST /api/sketches/upload",
+          "storage": "Supabase Storage bucket 'sketches'",
+          "preprocessing": "Sharp.js for image optimization",
+          "max_batch_size": 10
+        },
+        "acceptance_criteria": [
+          "User can drag-drop multiple files",
+          "Upload progress indicator shows percentage",
+          "Files larger than 25MB show error message",
+          "Uploaded sketches appear in canvas within 3 seconds"
+        ]
+      },
+      {
+        "id": "F002",
+        "name": "AI Element Detection",
+        "priority": "P0",
+        "description": "Detect UI components with bounding boxes and confidence scores",
+        "requirements": [
+          "Detect: buttons, inputs, text blocks, images, cards, navigation bars, icons",
+          "Display bounding boxes with confidence scores (0-100%)",
+          "Show element type labels on hover",
+          "Manual correction tools (click to change element type)",
+          "Ambiguity resolution UI when confidence < 70%",
+          "Support nested elements (button inside card inside section)"
+        ],
+        "technical_implementation": {
+          "api_endpoint": "POST /api/ai/detect-elements",
+          "model": "GPT-4 Vision API",
+          "prompt_template": "@specs/element-detection-prompt.md",
+          "response_format": {
+            "elements": [
+              {
+                "type": "button|input|text|image|card|nav|icon",
+                "bbox": {"x": 0, "y": 0, "width": 100, "height": 50},
+                "confidence": 92,
+                "label": "CTA Button",
+                "nested_in": "parent_element_id"
+              }
+            ]
+          }
+        },
+        "acceptance_criteria": [
+          "Detects at least 90% of clear UI elements",
+          "Confidence scores displayed on bounding boxes",
+          "User can click element to see/change type",
+          "Ambiguous elements show 2-3 suggestions"
+        ]
+      },
+      {
+        "id": "F003",
+        "name": "Infinite Canvas Workspace",
+        "priority": "P0",
+        "description": "Boundless canvas with pan, zoom, and grid system",
+        "requirements": [
+          "Infinite pan in all directions",
+          "Two-finger pan gesture (mobile/tablet)",
+          "Zoom: pinch, mousewheel, +/- buttons",
+          "Home button returns to default view",
+          "Grid system: 4px, 8px, 16px snap-to-grid",
+          "Real-world scale units (px, rem, em)"
+        ],
+        "technical_implementation": {
+          "library": "React Flow or Konva.js",
+          "zoom_range": "10% to 500%",
+          "grid_overlay": "SVG pattern",
+          "viewport_persistence": "localStorage"
+        },
+        "acceptance_criteria": [
+          "Canvas pans smoothly without lag",
+          "Zoom maintains center point",
+          "Grid toggles on/off",
+          "Home button centers view on artboards"
+        ]
+      },
+      {
+        "id": "F004",
+        "name": "Moveable Artboard System",
+        "priority": "P0",
+        "description": "Preset device frames with drag-to-reframe functionality",
+        "requirements": [
+          "Preset sizes: iPhone 15 Pro (393x852), Pixel 8 (412x915), iPad Pro 12.9 (1024x1366), Desktop (1920x1080, 2560x1440)",
+          "Custom dimensions input",
+          "Portrait/landscape toggle",
+          "Tap+hold blue border → red → drag to reframe",
+          "Artboard naming (e.g. 'Dashboard Desktop')",
+          "Multiple artboards per canvas",
+          "Export only content inside artboard boundaries"
+        ],
+        "technical_implementation": {
+          "component": "ArtboardFrame.tsx",
+          "drag_library": "@dnd-kit/core",
+          "presets_config": "@specs/artboard-presets.json"
+        },
+        "acceptance_criteria": [
+          "User can select preset sizes from dropdown",
+          "Border turns red on tap+hold (500ms)",
+          "Artboard drags smoothly",
+          "Multiple artboards don't overlap by default"
+        ]
+      },
+      {
+        "id": "F005",
+        "name": "Layer Management",
+        "priority": "P0",
+        "description": "Organize canvas content with unlimited layers",
+        "requirements": [
+          "Layer types: Original Sketch, AI Detections, Live UI Render, Annotations, Brand Kit Overlay",
+          "Controls: show/hide, lock, rename, delete, duplicate",
+          "Opacity slider (0-100%)",
+          "Drag elements between layers",
+          "Merge layers (combine 2+ into 1)",
+          "Layer groups (folders)"
+        ],
+        "technical_implementation": {
+          "component": "LayerPanel.tsx",
+          "state_management": "Zustand store",
+          "drag_reorder": "@dnd-kit/sortable"
+        },
+        "acceptance_criteria": [
+          "Layers panel visible on right sidebar",
+          "Eye icon toggles visibility",
+          "Lock icon prevents editing",
+          "Drag-drop reorders layers"
+        ]
+      },
+      {
+        "id": "F006",
+        "name": "Live UI Rendering",
+        "priority": "P0",
+        "description": "Real-time interactive preview of detected UI",
+        "requirements": [
+          "Renders within 60 seconds of upload",
+          "Interactive elements: clickable buttons, form inputs, navigation links",
+          "Responsive preview modes: Mobile (375px), Tablet (768px), Desktop (1440px)",
+          "Device frames (iPhone, iPad, MacBook bezels)",
+          "Split-screen view (sketch left, UI right)",
+          "Hover states and transitions"
+        ],
+        "technical_implementation": {
+          "api_endpoint": "POST /api/ai/generate-ui",
+          "model": "Claude 3.5 Sonnet",
+          "rendering_engine": "React + Tailwind",
+          "iframe_sandbox": "Sandboxed iframe for preview"
+        },
+        "acceptance_criteria": [
+          "UI preview loads within 60 seconds",
+          "Buttons are clickable with hover effects",
+          "Responsive toggle switches between device sizes",
+          "Split-screen shows sketch and UI side-by-side"
+        ]
+      },
+      {
+        "id": "F007",
+        "name": "Prompt-Based Visual Editing",
+        "priority": "P1",
+        "description": "Natural language commands to modify UI",
+        "requirements": [
+          "Text input: 'Make CTA button green and 20% larger'",
+          "Commands: colors, sizes, fonts, spacing, shadows, dark mode",
+          "Edit history (undo/redo up to 50 steps)",
+          "AI-suggested edits: 'Button contrast too low—try #007AFF'",
+          "Batch edits: 'Apply rounded corners to all buttons'"
+        ],
+        "technical_implementation": {
+          "api_endpoint": "POST /api/ai/edit-ui",
+          "model": "Claude 3.5 Sonnet",
+          "context": "Current UI code + user prompt",
+          "history_store": "Zustand with persist middleware"
+        },
+        "acceptance_criteria": [
+          "User types command and sees change within 10 seconds",
+          "Undo/redo buttons work correctly",
+          "AI suggestions appear in sidebar",
+          "Batch edits apply to all matching elements"
+        ]
+      },
+      {
+        "id": "F008",
+        "name": "Brand Kit Integration",
+        "priority": "P1",
+        "description": "Auto-detect or manually create brand assets",
+        "requirements": [
+          "Auto-detect: colors (primary, secondary, accent, neutrals), fonts, spacing patterns",
+          "Manual creator: color picker (HEX/RGB/HSL), Google Fonts selector, spacing presets, logo upload (SVG/PNG)",
+          "Apply to generated UI with one-click",
+          "Live preview toggle (before/after)",
+          "Export design tokens (CSS variables, Tailwind config, Figma styles)",
+          "Firecrawl integration: scrape brand assets from website URL"
+        ],
+        "technical_implementation": {
+          "api_endpoint": "POST /api/brand-kit/create",
+          "ocr_service": "Google Cloud Vision API",
+          "firecrawl_endpoint": "POST /api/brand-kit/scrape",
+          "export_formats": ["CSS", "Tailwind", "Figma"]
+        },
+        "acceptance_criteria": [
+          "Auto-detect extracts 3+ colors from sketch",
+          "Manual color picker updates preview in real-time",
+          "Firecrawl scrapes brand colors from website",
+          "Export downloads design tokens file"
+        ]
+      },
+      {
+        "id": "F009",
+        "name": "Code Export",
+        "priority": "P0",
+        "description": "Export production-ready code in multiple frameworks",
+        "requirements": [
+          "Frameworks: HTML/CSS, React, Vue 3, Angular 17+, Svelte, React Native",
+          "Styling: Tailwind CSS, Bootstrap 5, Material-UI, Vanilla CSS, Styled Components",
+          "Formats: ZIP download, GitHub commit, CodeSandbox link, NPM package",
+          "Code quality: ESLint + Prettier, semantic HTML, ARIA labels, responsive CSS, clean comments"
+        ],
+        "technical_implementation": {
+          "api_endpoint": "POST /api/export/code",
+          "model": "Claude 3.5 Sonnet",
+          "zip_library": "JSZip",
+          "github_integration": "Octokit.js",
+          "codesandbox_api": "https://codesandbox.io/api/v1/sandboxes/define"
+        },
+        "acceptance_criteria": [
+          "User selects framework and styling option",
+          "ZIP downloads with proper folder structure",
+          "GitHub commit pushes to selected repo",
+          "CodeSandbox link opens working preview"
+        ]
+      },
+      {
+        "id": "F010",
+        "name": "One-Click Deployment",
+        "priority": "P1",
+        "description": "Deploy to Vercel, Netlify, GitHub Pages, AWS Amplify",
+        "requirements": [
+          "OAuth login for deployment platforms",
+          "Preview URL (shareable link, no login required)",
+          "Custom domain connection",
+          "SSL included (HTTPS by default)",
+          "Build logs (view deployment status, errors)"
+        ],
+        "technical_implementation": {
+          "api_endpoint": "POST /api/deploy",
+          "vercel_integration": "Vercel API",
+          "netlify_integration": "Netlify API",
+          "github_pages": "GitHub Actions workflow"
+        },
+        "acceptance_criteria": [
+          "User clicks deploy button and sees OAuth flow",
+          "Deployment completes within 5 minutes",
+          "Preview URL is shareable",
+          "Build logs show progress"
+        ]
+      }
+    ],
+    "phase_2_features": [
+      {
+        "id": "F011",
+        "name": "Multi-Page Flows",
+        "priority": "P2",
+        "description": "Link multiple sketches into user flows",
+        "requirements": [
+          "Upload multiple sketches with auto-detect navigation",
+          "Hotspot linking (draw arrow → clickable link)",
+          "Flow map view (bird's-eye of all pages)",
+          "Prototype mode (walk through flows)",
+          "Transition animations (slide, fade, zoom)"
+        ]
+      },
+      {
+        "id": "F012",
+        "name": "Real-Time Collaboration",
+        "priority": "P2",
+        "description": "Google Docs-style co-editing",
+        "requirements": [
+          "Real-time cursors with user names",
+          "Comments/annotations pinned to elements",
+          "Version history (restore previous states)",
+          "Share permissions (view-only, edit, admin)",
+          "Activity feed (who changed what, when)"
+        ]
+      },
+      {
+        "id": "F013",
+        "name": "Animation Support",
+        "priority": "P2",
+        "description": "Detect motion indicators and translate to CSS animations",
+        "requirements": [
+          "Detect arrows, dashed lines for motion",
+          "Hover effects (button lift, color change)",
+          "Scroll triggers (fade in, slide up)",
+          "Page transitions (swipe, zoom)",
+          "Animation timeline editor"
+        ]
+      },
+      {
+        "id": "F014",
+        "name": "Component Library",
+        "priority": "P2",
+        "description": "Save and reuse generated components",
+        "requirements": [
+          "Save components for reuse",
+          "Template gallery (dashboards, landing pages, login forms)",
+          "Community templates (user-submitted)",
+          "Search components",
+          "Drag-drop from library to canvas"
+        ]
+      },
+      {
+        "id": "F015",
+        "name": "Accessibility Scanner",
+        "priority": "P2",
+        "description": "WCAG 2.1 AA/AAA compliance checker",
+        "requirements": [
+          "Color contrast validation (4.5:1 minimum)",
+          "Keyboard navigation testing",
+          "Screen reader annotations (auto-generate ARIA)",
+          "Alt text suggestions",
+          "Accessibility score (0-100)"
+        ]
+      }
+    ],
+    "phase_3_features": [
+      {
+        "id": "F016",
+        "name": "Figma/Sketch Plugin",
+        "priority": "P3",
+        "description": "Export to Figma for design handoff"
+      },
+      {
+        "id": "F017",
+        "name": "Video Sketch Input",
+        "priority": "P3",
+        "description": "Upload screen recordings → extract keyframes"
+      },
+      {
+        "id": "F018",
+        "name": "Voice-to-UI",
+        "priority": "P3",
+        "description": "Verbal sketch descriptions generate UI"
+      },
+      {
+        "id": "F019",
+        "name": "API Access",
+        "priority": "P3",
+        "description": "REST API for programmatic access"
+      }
+    ]
+  },
+  "ralph_loop_specifications": {
+    "config_file_location": ".claude/ralph-loop.local.md",
+    "workflow": {
+      "description": "Autonomous code generation with deterministic task allocation",
+      "steps": [
+        "Read feature from sketchflow-prd.json",
+        "Allocate to @specs/ (UI patterns, brand kit rules, accessibility guidelines)",
+        "Generate code via Claude 3.5 Sonnet",
+        "Run tests (unit + integration)",
+        "If tests pass → auto-commit to GitHub",
+        "If tests fail → create @fix_plan.md and retry (max 25 iterations)",
+        "Tag release with version bump (0.0.1 → 0.0.2)"
+      ]
+    },
+    "specs_directory_structure": {
+      "@specs/ui-components.md": "Button, input, card, navigation patterns",
+      "@specs/brand-kit.md": "Color, font, spacing rules",
+      "@specs/accessibility.md": "WCAG 2.1 AA/AAA guidelines",
+      "@specs/element-detection-prompt.md": "GPT-4 Vision prompt template",
+      "@specs/artboard-presets.json": "Device frame dimensions"
+    },
+    "stdlib_directory": {
+      "@stdlib/components/": "Reusable React components",
+      "@stdlib/utils/": "Helper functions (image processing, API calls)",
+      "@stdlib/hooks/": "Custom React hooks (useCanvas, useAI)"
+    },
+    "parallel_subagents": {
+      "search_subagents": 500,
+      "build_test_subagents": 1,
+      "use_case": "Search in parallel for solutions, build/test sequentially"
+    },
+    "backpressure_via_tests": {
+      "description": "Reject invalid code by failing tests",
+      "test_files": [
+        "tests/unit/*.test.ts",
+        "tests/integration/*.test.ts",
+        "tests/e2e/*.spec.ts"
+      ]
+    },
+    "completion_promise": "<promise>SKETCH UPLOADED → LIVE UI RENDERED → CODE EXPORTED</promise>"
+  },
+  "user_stories": [
+    {
+      "id": "US001",
+      "as_a": "Solo founder",
+      "i_want_to": "Upload my whiteboard sketch",
+      "so_that": "I can see a live UI preview without learning design tools"
+    },
+    {
+      "id": "US002",
+      "as_a": "Product designer",
+      "i_want_to": "Apply my brand colors to the generated UI",
+      "so_that": "The output matches my company's visual identity"
+    },
+    {
+      "id": "US003",
+      "as_a": "No-code builder",
+      "i_want_to": "Export React code",
+      "so_that": "I can deploy to Vercel with one click"
+    },
+    {
+      "id": "US004",
+      "as_a": "Startup founder",
+      "i_want_to": "Iterate with natural language prompts",
+      "so_that": "I can tweak the UI without touching code"
+    },
+    {
+      "id": "US005",
+      "as_a": "Developer",
+      "i_want_to": "Push code directly to GitHub",
+      "so_that": "My team can review and merge the generated UI"
+    }
+  ],
+  "success_metrics": {
+    "mvp": {
+      "sketch_to_ui_time": "< 60 seconds",
+      "element_detection_accuracy": "> 85%",
+      "code_export_success_rate": "> 95%",
+      "user_satisfaction": "> 4.0/5.0"
+    },
+    "business": {
+      "target_users_month_1": 100,
+      "target_users_month_3": 1000,
+      "target_users_month_6": 5000,
+      "conversion_rate_free_to_paid": "> 5%",
+      "monthly_recurring_revenue_target": "$10k by Month 6"
+    }
+  },
+  "pricing_tiers": [
+    {
+      "name": "Free",
+      "price": "$0/month",
+      "features": [
+        "10 sketches/month",
+        "Basic element detection",
+        "HTML/CSS export only",
+        "Watermarked preview"
+      ]
+    },
+    {
+      "name": "Pro",
+      "price": "$29/month",
+      "features": [
+        "Unlimited sketches",
+        "All frameworks (React, Vue, Angular, Svelte)",
+        "Brand Kit integration",
+        "GitHub + CodeSandbox export",
+        "One-click deployment",
+        "Priority support"
+      ]
+    },
+    {
+      "name": "Team",
+      "price": "$99/month",
+      "features": [
+        "Everything in Pro",
+        "Real-time collaboration (5 seats)",
+        "Component library",
+        "Version history",
+        "API access",
+        "Custom deployment workflows"
+      ]
+    }
+  ],
+  "risks_and_mitigations": [
+    {
+      "risk": "AI element detection fails on complex sketches",
+      "mitigation": "Manual correction tools + user feedback loop to improve model"
+    },
+    {
+      "risk": "Generated code has bugs",
+      "mitigation": "Comprehensive test suite + Ralph Loop backpressure"
+    },
+    {
+      "risk": "Users expect pixel-perfect output",
+      "mitigation": "Set expectations: 'MVP in minutes, refine with prompts'"
+    },
+    {
+      "risk": "High API costs (GPT-4 Vision + Claude)",
+      "mitigation": "Cache common patterns + batch requests"
+    },
+    {
+      "risk": "Competition from Figma AI, v0.dev",
+      "mitigation": "Focus on sketch-first workflow + no design tool required"
+    }
+  ],
+  "go_to_market_strategy": {
+    "target_channels": [
+      "Product Hunt launch (aim for #1 Product of the Day)",
+      "Twitter/X (build in public, daily updates)",
+      "Indie Hackers community",
+      "Designer/developer Slack/Discord communities",
+      "YouTube tutorials (how to sketch → code in 5 mins)"
+    ],
+    "positioning": "The fastest way from idea to deployed app—no Figma, no code editor required",
+    "early_access": "100 beta users (free lifetime Pro)"
+  },
+  "development_phases": {
+    "phase_1_mvp": {
+      "timeline": "Weeks 1-8",
+      "features": ["F001-F006", "F009"],
+      "goal": "Sketch → Live UI → Code Export working end-to-end"
+    },
+    "phase_2_polish": {
+      "timeline": "Weeks 9-12",
+      "features": ["F007", "F008", "F010"],
+      "goal": "Brand Kit + Prompt Editing + Deployment"
+    },
+    "phase_3_scale": {
+      "timeline": "Weeks 13-16",
+      "features": ["F011-F015"],
+      "goal": "Collaboration + Accessibility + Component Library"
+    }
+  },
+  "dependencies": {
+    "external_apis": [
+      "OpenAI GPT-4 Vision API (element detection)",
+      "Anthropic Claude 3.5 Sonnet (code generation)",
+      "Google Cloud Vision API (OCR)",
+      "Firecrawl API (brand scraping)",
+      "Vercel API (deployment)",
+      "GitHub API (code commit)"
+    ],
+    "internal_services": [
+      "Supabase (auth, database, storage)",
+      "Vercel (hosting)",
+      "GitHub Actions (CI/CD)"
+    ]
+  },
+  "testing_strategy": {
+    "unit_tests": "Jest + React Testing Library",
+    "integration_tests": "Playwright for API routes",
+    "e2e_tests": "Playwright for full user flows",
+    "ai_validation": "Compare generated UI vs. sketch (visual regression)",
+    "code_quality": "ESLint + Prettier + TypeScript strict mode"
+  },
+  "documentation": {
+    "user_docs": [
+      "Getting started guide",
+      "How to sketch for best results",
+      "Brand Kit setup tutorial",
+      "Code export options explained",
+      "Deployment walkthrough"
+    ],
+    "developer_docs": [
+      "API reference",
+      "Component architecture",
+      "Ralph Loop configuration",
+      "Contributing guidelines"
+    ]
+  },
+  "next_steps": [
+    "Set up GitHub repository with Next.js 14 + TypeScript",
+    "Configure Supabase project (auth, database, storage)",
+    "Create @specs/ directory with UI component patterns",
+    "Implement .claude/ralph-loop.local.md configuration",
+    "Build F001 (Sketch Upload) as first feature",
+    "Integrate GPT-4 Vision API for F002 (Element Detection)",
+    "Deploy MVP to Vercel for beta testing"
+  ]
+}
