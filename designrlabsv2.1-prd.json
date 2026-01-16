@@ -1,6 +1,6 @@
 {
   "product": {
-    "name": "SketchFlow",
+    "name": "DesignrLabs",
     "tagline": "Transform hand-drawn sketches into production-ready code",
     "version": "1.0.0",
     "repository": "https://github.com/flatfinderai-cyber/DesignrLabs.git",
@@ -8,7 +8,7 @@
     "target_launch": "Q2 2026"
   },
   "product_overview": {
-    "description": "SketchFlow is an AI-powered design-to-code platform that converts hand-drawn UI sketches into interactive, production-ready web applications. Upload sketches from whiteboards, iPad, or paper—SketchFlow detects UI elements, renders live previews, and exports clean code in React, Vue, Angular, or HTML/CSS.",
+    "description": "DesignrLabs is an AI-powered design-to-code platform that converts hand-drawn UI sketches into interactive, production-ready web applications. Upload sketches from whiteboards, iPad, or paper—DesignrLabs detects UI elements, renders live previews, and exports clean code in React, Vue, Angular, or HTML/CSS.",
     "target_users": [
       "Solo founders and entrepreneurs",
       "Product designers",
@@ -424,7 +424,7 @@
     "workflow": {
       "description": "Autonomous code generation with deterministic task allocation",
       "steps": [
-        "Read feature from sketchflow-prd.json",
+        "Read feature from DesignrLabs-prd.json",
         "Allocate to @specs/ (UI patterns, brand kit rules, accessibility guidelines)",
         "Generate code via Claude 3.5 Sonnet",
         "Run tests (unit + integration)",
@@ -639,4 +639,83 @@
     "Integrate GPT-4 Vision API for F002 (Element Detection)",
     "Deploy MVP to Vercel for beta testing"
   ]
+    ],
+    "database_schema": {
+    "tables": [
+      {
+        "name": "users",
+        "columns": [
+          {"name": "id", "type": "uuid", "primary_key": true},
+          {"name": "email", "type": "varchar(255)", "unique": true},
+          {"name": "created_at", "type": "timestamp"},
+          {"name": "subscription_tier", "type": "enum", "values": ["free", "pro", "team"]}
+        ]
+      },
+      {
+        "name": "sketches",
+        "columns": [
+          {"name": "id", "type": "uuid", "primary_key": true},
+          {"name": "user_id", "type": "uuid", "foreign_key": "users.id"},
+          {"name": "file_url", "type": "text"},
+          {"name": "status", "type": "enum", "values": ["uploading", "processing", "completed", "failed"]},
+          {"name": "created_at", "type": "timestamp"}
+        ]
+      },
+      {
+        "name": "projects",
+        "columns": [
+          {"name": "id", "type": "uuid", "primary_key": true},
+          {"name": "user_id", "type": "uuid", "foreign_key": "users.id"},
+          {"name": "name", "type": "varchar(255)"},
+          {"name": "brand_kit", "type": "jsonb"},
+          {"name": "created_at", "type": "timestamp"}
+        ]
+      },
+      {
+        "name": "generated_ui",
+        "columns": [
+          {"name": "id", "type": "uuid", "primary_key": true},
+          {"name": "sketch_id", "type": "uuid", "foreign_key": "sketches.id"},
+          {"name": "code", "type": "text"},
+          {"name": "framework", "type": "varchar(50)"},
+          {"name": "created_at", "type": "timestamp"}
+        ]
+      }
+    ]
+  },
+    "environment_variables": {
+    "required": [
+      {"name": "OPENAI_API_KEY", "description": "GPT-4 Vision API key", "where_to_get": "https://platform.openai.com/api-keys"},
+      {"name": "ANTHROPIC_API_KEY", "description": "Claude 3.5 Sonnet API key", "where_to_get": "https://console.anthropic.com/"},
+      {"name": "GOOGLE_CLOUD_API_KEY", "description": "Google Cloud Vision API key", "where_to_get": "https://console.cloud.google.com/"},
+      {"name": "FIRECRAWL_API_KEY", "description": "Firecrawl API key for brand scraping", "where_to_get": "https://firecrawl.dev/"},
+      {"name": "NEXT_PUBLIC_SUPABASE_URL", "description": "Supabase project URL", "where_to_get": "Supabase dashboard"},
+      {"name": "NEXT_PUBLIC_SUPABASE_ANON_KEY", "description": "Supabase anon key", "where_to_get": "Supabase dashboard"},
+      {"name": "SUPABASE_SERVICE_ROLE_KEY", "description": "Supabase service role key (server-side only)", "where_to_get": "Supabase dashboard"},
+      {"name": "VERCEL_TOKEN", "description": "Vercel API token for deployment", "where_to_get": "https://vercel.com/account/tokens"},
+      {"name": "GITHUB_TOKEN", "description": "GitHub personal access token", "where_to_get": "https://github.com/settings/tokens"}
+    ],
+    "optional": [
+      {"name": "SENTRY_DSN", "description": "Sentry error tracking DSN"},
+      {"name": "ANALYTICS_ID", "description": "Google Analytics or Vercel Analytics ID"}
+    ]
+  },
+    "error_handling": {
+    "api_failures": {
+      "openai_timeout": "Retry up to 3 times with exponential backoff. Show user 'AI processing taking longer than expected' message",
+      "anthropic_rate_limit": "Queue request and retry after rate limit window. Notify user of delay",
+      "supabase_connection_error": "Use local cache if available, otherwise show 'Connection issue' error with retry button"
+    },
+    "user_errors": {
+      "invalid_file_format": "Show error: 'Please upload JPEG, PNG, HEIC, or PDF files only'",
+      "file_too_large": "Show error: 'File must be under 25MB. Try compressing the image.'",
+      "low_confidence_detection": "Show UI with suggested element types and allow manual selection"
+    },
+    "system_errors": {
+      "out_of_memory": "Reduce image resolution and retry processing",
+      "deployment_failure": "Show build logs to user with link to documentation"
+    }
+  },
+    "canvas_library_decision": "Konva.js",
+  "canvas_library_rationale": "Konva.js chosen over React Flow because it provides better control for custom canvas interactions, layer management, and artboard manipulation. React Flow is optimized for node-based workflows, not freeform design canvases."
 }
